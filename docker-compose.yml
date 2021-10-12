@@ -1,0 +1,56 @@
+version: "3.7"
+
+# environment
+x-volumes: &server-volume
+  JWT_ALGORITHM: "HS256"
+  HOST: "http://localhost:8000"
+
+services:
+  server:
+    build:
+      context: ./app/
+      dockerfile: ./Dockerfile
+    container_name: node_blog_server
+    command: yarn start
+    env_file:
+      - ./config/.env
+      - ./config/.env.db
+    environment:
+      <<: *server-volume
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/:/project/app/
+      - ./frontend/build/:/project/frontend/build/
+      - /project/app/node_modules
+
+  # frontend:
+  #   build:
+  #     context: ./frontend/
+  #     dockerfile: ./Dockerfile
+  #   container_name: node_blog_frontend
+  #   command: yarn run serve
+  #   environment:
+  #     - VUE_APP_API_HOST=http://localhost:8000
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./frontend/:/project/frontend/
+  #     - /project/frontend/node_modules
+
+  db:
+    image: mongo
+    container_name: node_blog_db
+    env_file: ./config/.env.db
+    # If connection is remote.
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=nayan32biswas
+    #   - MONGO_INITDB_ROOT_PASSWORD=nayan32biswas
+    volumes:
+      - dbdata:/data/db
+
+  redis-server:
+    image: redis
+
+volumes:
+  dbdata:
